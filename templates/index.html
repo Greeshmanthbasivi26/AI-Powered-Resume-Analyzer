@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume & Job Match Analyzer</title>
+    
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="container">
+        <header class="main-header text-center">
+            <h1>AI Resume & Job Match Analyzer</h1>
+            <p class="subtitle">Upload your resume and a job description to see how well you match.</p>
+        </header>
+
+        <div class="card-glass">
+            <form id="analyze-form" method="post" enctype="multipart/form-data">
+                <div class="row">
+                    <!-- Step 1: Upload Resume -->
+                    <div class="col-md-6 mb-4">
+                        <label for="resume" class="form-label"><i class="fas fa-file-alt me-2"></i>Step 1: Upload Your Resume</label>
+                        <div class="file-upload-wrapper">
+                            <input type="file" name="resume" id="resume" required>
+                            <label for="resume" class="file-upload-label">
+                                <span class="file-upload-icon"><i class="fas fa-cloud-upload-alt"></i></span>
+                                <span class="file-upload-text">Click to choose a PDF or DOCX file</span>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Step 2: Paste Job Description -->
+                    <div class="col-md-6 mb-4">
+                        <label for="job_description" class="form-label"><i class="fas fa-clipboard-list me-2"></i>Step 2: Paste Job Description</label>
+                        <textarea class="form-control" name="job_description" id="job_description" rows="7" placeholder="Paste the full job description here..." required></textarea>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <button type="submit" class="btn-analyze">
+                        <span class="icon"><i class="fas fa-cogs"></i></span>
+                        <span class="text">Analyze Match</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Loading Animation -->
+            <div id="loader" class="d-none text-center mt-4">
+                <div class="scanner"><span></span></div>
+                <p class="loading-text mt-3">Scanning documents and calculating your match score...</p>
+            </div>
+        </div>
+
+        {% if results %}
+        <div id="results" class="results-container">
+            <div class="results-header text-center">
+                <h2>Analysis Complete!</h2>
+                <p>Here's the breakdown of how your resume aligns with the job role.</p>
+            </div>
+            
+            <div class="row align-items-center">
+                <div class="col-lg-4 text-center">
+                    <div class="score-circle" style="--p:{{ results.score }};">
+                      <div class="score-text">{{ results.score }}%</div>
+                      <div class="score-label">Match Score</div>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="keyword-card matched">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-check-circle me-2"></i>Matched Keywords</h5>
+                                    <span>({{ results.matched_keywords|length }})</span>
+                                </div>
+                                <div class="card-body">
+                                    {% for keyword in results.matched_keywords %}
+                                        <span class="keyword-badge">{{ keyword }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="keyword-card missing">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-times-circle me-2"></i>Missing Keywords</h5>
+                                    <span>({{ results.missing_keywords|length }})</span>
+                                </div>
+                                <div class="card-body">
+                                    {% for keyword in results.missing_keywords %}
+                                        <span class="keyword-badge">{{ keyword }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- JavaScript for interactivity -->
+    <script>
+        document.getElementById('analyze-form').addEventListener('submit', function() {
+            // Hide form and show loader
+            this.style.display = 'none';
+            document.getElementById('loader').classList.remove('d-none');
+        });
+
+        // Update file upload text on file selection
+        const resumeInput = document.getElementById('resume');
+        if (resumeInput) {
+            resumeInput.addEventListener('change', function() {
+                const fileName = this.files[0] ? this.files[0].name : 'Click to choose a PDF or DOCX file';
+                document.querySelector('.file-upload-text').textContent = fileName;
+            });
+        }
+
+        // Smooth scroll to results
+        const resultsDiv = document.getElementById('results');
+        if (resultsDiv) {
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+</body>
+</html>
